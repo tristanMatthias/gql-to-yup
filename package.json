@@ -1,0 +1,25 @@
+{
+  "name": "gql-to-yup",
+  "version": "0.0.0",
+  "description": "Read GraphQL schemas and turn them into Yup validation objects!",
+  "main": "dist/GQL2Yup.js",
+  "types": "dist/GQL2Yup.d.ts",
+  "repository": "https://github.com/tristanMatthias/gql-to-yup.git",
+  "author": "Tristan Matthias <hello@tristanmatthias.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p ./",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.0",
+    "@types/yup": "^0.29.3",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "graphql": "^15.1.0",
+    "yup": "^0.29.1"
+  }
+}
