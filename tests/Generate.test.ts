@@ -44,13 +44,31 @@ describe('type normalization', () => {
     expect(v.test).toEqual(test);
   });
 
-  // it('should parse DateTime as Date', async () => {
-  //   const gql2yup = new GQL2Yup('type Test { test: DateTime }');
-  //   const Person = gql2yup.getEntity('Test');
-  //   const test = new Date();
-  //   const v = await Person.validate({test})
-  //   expect(v.test).toEqual(test);
-  // });
+  it('should parse DateTime as Date', async () => {
+    expect.assertions(3);
+    const gql2yup = new GQL2Yup(`
+      scalar DateTime
+      type Test { test: DateTime }
+    `);
+    const Test = gql2yup.getEntity('Test');
+
+    const test = new Date();
+    const v1 = await Test.validate({test});
+    expect(v1.test).toEqual(test);
+
+    try {
+      await Test.validate({test: 123});
+    } catch (e) {
+      expect(e.message).toEqual('Invalid date format');
+    }
+
+    try {
+      await Test.validate({test: 'some date'});
+    } catch (e) {
+      expect(e.message).toEqual('Invalid date format');
+    }
+
+  });
 
   it('should parse String as string', async () => {
     const gql2yup = new GQL2Yup('type Test { test: String }');

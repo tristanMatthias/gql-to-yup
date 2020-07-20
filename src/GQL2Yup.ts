@@ -1,4 +1,6 @@
 import fs from 'fs';
+import moment from 'moment';
+
 import { buildSchema, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from 'graphql';
 import * as yup from 'yup';
 
@@ -20,6 +22,13 @@ export const DEFAULT_TYPES = [
 
 
 export class GQL2Yup {
+
+  private _dateFormats = [
+    moment.ISO_8601,
+    moment.RFC_2822,
+    moment.defaultFormat,
+    moment.defaultFormatUtc
+  ]
 
   private _entities: { [name: string]: yup.ObjectSchema<any> | yup.MixedSchema<any> } = {}
 
@@ -128,6 +137,7 @@ export class GQL2Yup {
       case 'Float':
         t = 'number';
         break;
+      case 'Date':
       case 'DateTime':
         t = 'Date';
         break;
@@ -165,11 +175,28 @@ export class GQL2Yup {
     let lazy = false;
 
     switch (type) {
-      case 'Date':
       case 'boolean':
       case 'number':
       case 'string':
         base = yup[type.toLowerCase()]();
+        break;
+
+      case 'Date':
+      case 'DateTime':
+        const { _dateFormats } = this;
+        base = yup.mixed().test({
+          name: 'Valid date',
+          message: 'Invalid date format',
+          test: (value: any) => {
+            if (value instanceof Date) return true;
+            if (typeof value !== 'string') return false;
+
+            try {
+              value = moment(value, _dateFormats);
+              return value.isValid();
+            } catch (e) { return false }
+          }
+        });
         break;
 
       default:

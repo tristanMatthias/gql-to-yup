@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "graphql": "^15.1.0",
+    "moment": "^2.27.0",
     "yup": "^0.29.1"
   }
 }
