@@ -1,6 +1,6 @@
 {
   "name": "gql-to-yup",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Read GraphQL schemas and turn them into Yup validation objects!",
   "main": "dist/GQL2Yup.js",
   "types": "dist/GQL2Yup.d.ts",
