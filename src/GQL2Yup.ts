@@ -199,6 +199,7 @@ export class GQL2Yup {
           name: 'Valid date',
           message: 'Invalid date format',
           test: (value: any) => {
+            if (value === undefined || value === null) return true; // Skip
             if (value instanceof Date) return true;
             if (typeof value !== 'string') return false;
 

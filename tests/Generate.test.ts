@@ -60,7 +60,7 @@ describe('type normalization', () => {
   });
 
   it('should parse DateTime as Date', async () => {
-    expect.assertions(3);
+    expect.assertions(5);
     const gql2yup = new GQL2Yup(`
       scalar DateTime
       type Test { test: DateTime }
@@ -70,6 +70,10 @@ describe('type normalization', () => {
     const test = new Date();
     const v1 = await Test.validate({test});
     expect(v1.test).toEqual(test);
+
+    // Allow null
+    const v2 = await Test.validate({test: null});
+    expect(v2.test).toEqual(null);
 
     try {
       await Test.validate({test: 123});
@@ -81,6 +85,17 @@ describe('type normalization', () => {
       await Test.validate({test: 'some date'});
     } catch (e) {
       expect(e.message).toEqual('Invalid date format');
+    }
+
+    // Required
+    try {
+      const Test = new GQL2Yup(`
+        scalar DateTime
+        type Test { test: DateTime! }
+      `).getEntity('Test');
+      await Test.validate({test: null});
+    } catch (e) {
+      expect(e.message).toEqual('test is a required field');
     }
 
   });
