@@ -32,6 +32,21 @@ describe('new GQL2Yup()', () => {
     const v = await Person.validate({ name })
     expect(v.name).toEqual(name);
   });
+
+  it('should generate a yup object from a string as file src', async () => {
+    const gql2yup = new GQL2Yup(`enum Test {
+      value1,
+      value2
+    }`);
+    const Test = gql2yup.getEntity('Test');
+    expect(await Test.validate('value1')).toEqual('value1');
+    expect(await Test.validate('value2')).toEqual('value2');
+    try {
+      await Test.validate('wrong');
+    } catch (e) {
+      expect(e.message).toEqual(`Enum Test must be one of the following values: value1, value2`)
+    }
+  });
 });
 
 

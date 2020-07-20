@@ -1,7 +1,7 @@
 import fs from 'fs';
 import moment from 'moment';
 
-import { buildSchema, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from 'graphql';
+import { buildSchema, GraphQLObjectType, GraphQLSchema, GraphQLUnionType, GraphQLEnumType } from 'graphql';
 import * as yup from 'yup';
 
 import { ArgType, Field, YupType } from './types';
@@ -34,7 +34,8 @@ export class GQL2Yup {
 
 
   constructor(schemaOrString: string | GraphQLSchema) {
-    const { objects, schema, unions } = this._parse(schemaOrString);
+    const { objects, unions, enums } = this._parse(schemaOrString);
+
 
     // Loop over all custom object types, and convert them to yup.object()'s
     objects.forEach(ot => {
@@ -47,6 +48,7 @@ export class GQL2Yup {
 
       this._entities[ot.name] = yup.object().shape(fields);
     });
+
 
     unions.forEach(t => {
       const typeNames = t.getTypes().map(t => t.name).join(', ');
@@ -72,6 +74,13 @@ export class GQL2Yup {
           },
         });
     });
+
+    enums.forEach(e => {
+      const values = e.getValues().map(v => v.value);
+      this._entities[e.name] = yup.mixed()
+        .oneOf(values)
+        .label(`Enum ${e.name}`);
+    })
 
   }
 
@@ -99,6 +108,8 @@ export class GQL2Yup {
 
     const types = Object.values(schema.getTypeMap());
 
+    const enums = types.filter(t => t.astNode?.kind === 'EnumTypeDefinition') as GraphQLEnumType[];
+
     const objects = types.filter(t =>
       (!DEFAULT_TYPES.includes(t.name)) &&
       !t.name.startsWith('__') &&
@@ -111,7 +122,7 @@ export class GQL2Yup {
       ((t as GraphQLUnionType).toConfig().types)
     ) as GraphQLUnionType[];
 
-    return { schema, objects, unions }
+    return { schema, objects, unions, enums }
   }
 
 
