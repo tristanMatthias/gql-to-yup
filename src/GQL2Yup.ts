@@ -183,7 +183,6 @@ export class GQL2Yup {
     } = this._argType(field.type.toString())!;
 
     let base: YupType;
-    let lazy = false;
 
     switch (type) {
       case 'boolean':
@@ -195,7 +194,11 @@ export class GQL2Yup {
       case 'Date':
       case 'DateTime':
         const { _dateFormats } = this;
-        base = yup.mixed().test({
+        base = yup.mixed()
+        // This needs to be done before the test for sequential testing
+        if (isRequired) base = (base as yup.MixedSchema).required();
+
+        base = (base as yup.MixedSchema).test({
           name: 'Valid date',
           message: 'Invalid date format',
           test: (value: any) => {
@@ -214,15 +217,14 @@ export class GQL2Yup {
       default:
         base = yup.lazy(() => {
           let e = this._entities[type];
-          if (isArray) return e.required()
+          if (isArray) return e.required();
           else return e;
         })
-        lazy = true;
     }
 
     if (isArray) base = yup.array().of(base);
+    if (!isRequired) base = (base as yup.ObjectSchema).nullable();
 
-    if (isRequired && !lazy) base = (base as yup.ObjectSchema).required();
     return [field.name, base];
   };
 

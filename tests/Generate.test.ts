@@ -68,21 +68,21 @@ describe('type normalization', () => {
     const Test = gql2yup.getEntity('Test');
 
     const test = new Date();
-    const v1 = await Test.validate({test});
+    const v1 = await Test.validate({ test });
     expect(v1.test).toEqual(test);
 
     // Allow null
-    const v2 = await Test.validate({test: null});
+    const v2 = await Test.validate({ test: null });
     expect(v2.test).toEqual(null);
 
     try {
-      await Test.validate({test: 123});
+      await Test.validate({ test: 123 });
     } catch (e) {
       expect(e.message).toEqual('Invalid date format');
     }
 
     try {
-      await Test.validate({test: 'some date'});
+      await Test.validate({ test: 'some date' });
     } catch (e) {
       expect(e.message).toEqual('Invalid date format');
     }
@@ -93,7 +93,7 @@ describe('type normalization', () => {
         scalar DateTime
         type Test { test: DateTime! }
       `).getEntity('Test');
-      await Test.validate({test: null});
+      await Test.validate({ test: null });
     } catch (e) {
       expect(e.message).toEqual('test is a required field');
     }
@@ -159,4 +159,22 @@ describe('type normalization', () => {
     const v2 = await Custom.validate(test2);
     expect(v2.bar).toEqual(test2.bar);
   });
+
+  it('should allow nullable fields if not required with \'!\'', async () => {
+    const gql2yup = new GQL2Yup(`
+      type Test { nullable: String }
+    `);
+
+    // Pass null
+    const nulled = { nullable: null };
+    expect(
+      await gql2yup.getEntity('Test').validate(nulled)
+    ).toEqual(nulled);
+
+    // Pass undefined
+    const undef = { nullable: undefined }
+    expect(
+      await gql2yup.getEntity('Test').validate(undef)
+    ).toEqual(undef);
+  })
 });
