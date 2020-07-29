@@ -183,6 +183,7 @@ export class GQL2Yup {
     } = this._argType(field.type.toString())!;
 
     let base: YupType;
+    let lazy = false;
 
     switch (type) {
       case 'boolean':
@@ -215,6 +216,7 @@ export class GQL2Yup {
         break;
 
       default:
+        lazy = true;
         base = yup.lazy(() => {
           let e = this._entities[type];
           if (isArray) return e.required();
@@ -222,8 +224,8 @@ export class GQL2Yup {
         })
     }
 
+    if (!isRequired && !lazy) base = (base as yup.ObjectSchema).nullable();
     if (isArray) base = yup.array().of(base);
-    if (!isRequired) base = (base as yup.ObjectSchema).nullable();
 
     return [field.name, base];
   };
