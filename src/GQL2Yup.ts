@@ -33,7 +33,10 @@ export class GQL2Yup {
   private _entities: { [name: string]: yup.ObjectSchema<any> | yup.MixedSchema<any> } = {}
 
 
-  constructor(schemaOrString: string | GraphQLSchema) {
+  constructor(
+    schemaOrString: string | GraphQLSchema,
+    public excludeFields: string[] = []
+  ) {
     const { objects, unions, enums } = this._parse(schemaOrString);
 
 
@@ -41,9 +44,17 @@ export class GQL2Yup {
     objects.forEach(ot => {
       const fields = Object.values(ot.getFields())
         .reduce<yup.ObjectSchemaDefinition<any>>((_fields, f) => {
+
+          // Skip field if it's exlcuded
+          if (
+            excludeFields.includes(`${ot.name}.${f.name}`) ||
+            excludeFields.includes(f.name)
+          ) return _fields;
+
           const [name, y] = this._fieldToYup(f)
           _fields[name] = y;
           return _fields;
+
         }, {});
 
       this._entities[ot.name] = yup.object().shape(fields);
@@ -224,7 +235,7 @@ export class GQL2Yup {
         })
     }
 
-    if (!isRequired && !lazy) base = (base as yup.ObjectSchema).nullable();
+    if (!lazy) base = (base as yup.ObjectSchema).nullable(!isRequired);
     if (isArray) base = yup.array().of(base);
 
     return [field.name, base];

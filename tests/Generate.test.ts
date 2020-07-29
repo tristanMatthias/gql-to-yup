@@ -178,3 +178,59 @@ describe('type normalization', () => {
     ).toEqual(undef);
   })
 });
+
+
+describe('Exclude fields', () => {
+  it('should ignore field on ObjectType', async () => {
+    const gql = new GQL2Yup(`
+        type Foo { exclude: String! require1: String! }
+      `, ['exclude']);
+
+    const Foo = gql.getEntity('Foo');
+
+    const input = { require1: 'lorem ipsum' };
+    expect(
+      await Foo.validate(input)
+    ).toEqual(input);
+  });
+
+  it('should ignore field on ObjectType across many types', async () => {
+    const gql = new GQL2Yup(`
+        type Foo { exclude: String! require1: String! }
+        type Bar { exclude: String! require2: String! }
+      `, ['exclude']);
+
+    const Foo = gql.getEntity('Foo');
+    const Bar = gql.getEntity('Bar');
+
+    const input1 = { require1: 'lorem ipsum' };
+    expect(
+      await Foo.validate(input1)
+    ).toEqual(input1);
+
+    const input2 = { require2: 'lorem ipsum' };
+    expect(
+      await Bar.validate(input2)
+    ).toEqual(input2);
+  });
+
+  it('should ignore "ObjectType.field" format', async () => {
+    const gql = new GQL2Yup(`
+        type Foo { exclude: String! require1: String! }
+        type Bar { exclude: String! require2: String! }
+      `, ['Foo.exclude']);
+
+    const Foo = gql.getEntity('Foo');
+    const Bar = gql.getEntity('Bar');
+
+    const input1 = { require1: 'lorem ipsum' };
+    expect(
+      await Foo.validate(input1)
+    ).toEqual(input1);
+
+    const input2 = { exclude: 'required', require2: 'lorem ipsum' };
+    expect(
+      await Bar.validate(input2)
+    ).toEqual(input2);
+  });
+})
