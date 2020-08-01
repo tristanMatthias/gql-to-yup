@@ -1,3 +1,5 @@
+![GQL 2 Yup](banner.png)
+
 # GraphQL to Yup
 [![Coverage Status](https://coveralls.io/repos/github/tristanMatthias/gql-to-yup/badge.svg?branch=master)](https://coveralls.io/github/tristanMatthias/gql-to-yup?branch=master)
 ![Build & Test](https://github.com/tristanMatthias/gql-to-yup/workflows/Build%20&%20Test/badge.svg)
